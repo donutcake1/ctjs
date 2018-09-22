@@ -1,20 +1,44 @@
-const Eris = require("eris");
+const Eris = require('eris');
+const CatLoggr = require('cat-loggr');
+const catprefix = "cat!";
 
-var bot = new Eris("NDc0NDg3NjczMzQwMjk3MjI4.DoUyvw.1yDvzibSRTNbMEXiN1XXQagKFr4");
-// Replace BOT_TOKEN with your bot account's token
+var bot = new Eris(<place_your_token_there>);
 
-bot.on("ready", () => { // When the bot is ready
-    console.log("Ready!"); // Log "Ready!"
-});
+const loggr = new CatLoggr({
+    levels: [
+        { name: 'info', color: CatLoggr._chalk.red.bgBlack },
+        { name: 'debug', color: CatLoggr._chalk.black.bgRed },
+        { name: 'error', color: CatLoggr._chalk.red.bgRed },
+        { name: 'reload', color: CatLoggr._chalk.green.bgBlack }
+    ]
+}).setGlobal();
 
-bot.on("message", (msg) => { // When a message is created
-    if(msg.content === "!ping") { // If the message content is "!ping"
-        bot.createMessage(msg.channel.id, "Pong!");
-        // Send a message in the same channel with "Pong!"
-    } else if(msg.content === "!pong") { // Otherwise, if the message is "!pong"
-        bot.createMessage(msg.channel.id, "Ping!");
-        // Respond with "Ping!"
+bot.on("ready", () => {
+    console.info("HELLO?");
+})
+
+bot.on("messageCreate", (msg) => {
+    if(msg.content === catprefix + "ping"){
+        bot.createMessage(msg.channel.id, "I'm fine, " + "<@" + msg.author.id + ">, thanks for asking!");
+        console.info("Someone pinged me! ID: " + msg.author.id);
     }
 });
 
-bot.connect(); // Get the bot to connect to Discord
+bot.on("messageCreate", (msg) => {
+    if(msg.content === catprefix + "reload"){
+        if(msg.author.id != "241612639560531968"){
+            bot.createMessage(msg.channel.id, "You look pretty suspicious to reboot me... :thinking:");
+            console.warn(msg.author.id + "... They think they can reboot me...");
+        } else {
+            console.reload("Got Donut rights! Unloading...");
+            bot.disconnect();
+        }
+    }
+});
+
+bot.on("disconnect", () => {
+    console.reload("Disconnected! Reconnecting...");
+    bot.connect();
+})
+
+bot.connect();
